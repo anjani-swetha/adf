@@ -1,0 +1,9 @@
+{
+	"name": "firstadfpracticedemo1",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "bf5550f7-a37d-4f02-81df-4869998f5722",
+		"tenantId": "76a2ae5a-9f00-4f6b-95ed-5d33d77c4d61"
+	}
+}

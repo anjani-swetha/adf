@@ -1,0 +1,45 @@
+{
+	"name": "Delete_pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "Delete",
+				"type": "Delete",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "dest_emp_file",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "\"4\""
+						}
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "adfdemo_ls",
+							"type": "LinkedServiceReference"
+						},
+						"path": "container-adfdemo/output/logs"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": false,
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2025-10-17T11:34:48Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

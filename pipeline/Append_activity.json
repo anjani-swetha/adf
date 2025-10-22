@@ -1,0 +1,29 @@
+{
+	"name": "Append_activity",
+	"properties": {
+		"activities": [
+			{
+				"name": "Append variable",
+				"type": "AppendVariable",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "List_of_Files",
+					"value": "\"Manager\""
+				}
+			}
+		],
+		"variables": {
+			"List_of_Files": {
+				"type": "Array",
+				"defaultValue": [
+					"Emp",
+					"Dept"
+				]
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-10-17T11:34:48Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

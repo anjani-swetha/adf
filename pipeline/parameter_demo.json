@@ -1,0 +1,96 @@
+{
+	"name": "parameter_demo",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "dbo.@{pipeline().parameters.demoSourceTable}"
+					},
+					{
+						"name": "Destination",
+						"value": "dbo.@{pipeline().parameters.demoDestinationTable}"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "SqlServerSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SqlServerTable_parameter_demo",
+						"type": "DatasetReference",
+						"parameters": {
+							"table_DS": {
+								"value": "@pipeline().parameters.demoSourceTable",
+								"type": "Expression"
+							},
+							"dbName_DS": {
+								"value": "@pipeline().parameters.dbName_PL",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "SqlServerTable_parameter_demo",
+						"type": "DatasetReference",
+						"parameters": {
+							"table_DS": {
+								"value": "@pipeline().parameters.demoDestinationTable",
+								"type": "Expression"
+							},
+							"dbName_DS": {
+								"value": "@pipeline().parameters.dbName_PL",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"dbName_PL": {
+				"type": "string"
+			},
+			"demoSourceTable": {
+				"type": "string"
+			},
+			"demoDestinationTable": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-10-17T09:35:42Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,58 @@
+{
+	"name": "Pivot_Gender",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Emp_Gender",
+						"type": "DatasetReference"
+					},
+					"name": "EmpWithGender"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "OutputDataSet",
+						"type": "DatasetReference"
+					},
+					"name": "sink"
+				}
+			],
+			"transformations": [
+				{
+					"name": "pivot"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Name as string,",
+				"          Salary as string,",
+				"          DeptNo as string,",
+				"          Gender as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> EmpWithGender",
+				"EmpWithGender pivot(groupBy(DeptNo),",
+				"     pivotBy(Gender),",
+				"     No_Of_emp = count(Name),",
+				"     columnNaming: '$N_$V',",
+				"     lateral: true) ~> pivot",
+				"pivot sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          DeptNo as string,",
+				"          NoOfPeople as string,",
+				"          Dept_Name as string",
+				"     ),",
+				"     partitionFileNames:['Pivoted_data'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sink"
+			]
+		}
+	}
+}

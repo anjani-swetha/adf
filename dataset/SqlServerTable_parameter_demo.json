@@ -1,0 +1,34 @@
+{
+	"name": "SqlServerTable_parameter_demo",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SqlServer_ls_parameter_demo",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"dbName": {
+					"value": "@dataset().dbName_DS",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"table_DS": {
+				"type": "string"
+			},
+			"dbName_DS": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": {
+				"value": "@dataset().table_DS",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
