@@ -13,6 +13,189 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/AggregateFlow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Empdata",
+								"type": "DatasetReference"
+							},
+							"name": "Emp"
+						},
+						{
+							"dataset": {
+								"referenceName": "DeptData",
+								"type": "DatasetReference"
+							},
+							"name": "Dept"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Emp_Dept_Data",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "DeptbasedEmp"
+						},
+						{
+							"name": "joinDept"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Name as string,",
+						"          Salary as string,",
+						"          DeptNo as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Emp",
+						"source(output(",
+						"          DeptNo as integer,",
+						"          Dept_Name as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Dept",
+						"Emp aggregate(groupBy(DeptNo),",
+						"     NoOfPeople = count(Name)) ~> DeptbasedEmp",
+						"DeptbasedEmp, Dept join(DeptbasedEmp@DeptNo == Dept@DeptNo,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinDept",
+						"joinDept sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          Name as string,",
+						"          Category as string,",
+						"          Status as string,",
+						"          Error as string",
+						"     ),",
+						"     partitionFileNames:['emp_dept.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DeptNotHavingEmp')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "DeptData",
+								"type": "DatasetReference"
+							},
+							"name": "Dept"
+						},
+						{
+							"dataset": {
+								"referenceName": "Empdata",
+								"type": "DatasetReference"
+							},
+							"name": "Emp"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "OutputDataSet",
+								"type": "DatasetReference"
+							},
+							"name": "sink"
+						}
+					],
+					"transformations": [
+						{
+							"name": "exists"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          DeptNo as string,",
+						"          Dept_Name as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Dept",
+						"source(output(",
+						"          Name as string,",
+						"          Salary as string,",
+						"          DeptNo as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> Emp",
+						"Dept, Emp exists(Dept@DeptNo == Emp@DeptNo,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> exists",
+						"exists sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          DeptNo as string,",
+						"          NoOfPeople as string,",
+						"          Dept_Name as string",
+						"     ),",
+						"     partitionFileNames:['Dept_Not_Having_Employees.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Emp_Dept')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "WranglingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"name": "Empdata",
+							"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> Empdata",
+							"dataset": {
+								"referenceName": "Empdata",
+								"type": "DatasetReference"
+							}
+						},
+						{
+							"name": "DeptData",
+							"script": "source(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> DeptData",
+							"dataset": {
+								"referenceName": "DeptData",
+								"type": "DatasetReference"
+							}
+						}
+					],
+					"script": "section Section1;\r\nshared Empdata = let AdfDoc = AzureStorage.BlobContents(\"https://storageadfdemo1.blob.core.windows.net/container-adfdemo/input/Emp_Data.csv\"),Csv = Csv.Document(AdfDoc, [Delimiter = \",\", Encoding = TextEncoding.Utf8, QuoteStyle = QuoteStyle.Csv]), PromotedHeaders = Table.PromoteHeaders(Csv, [PromoteAllScalars = true]) in  PromotedHeaders;\r\nshared DeptData = let AdfDoc = AzureStorage.BlobContents(\"https://storageadfdemo1.blob.core.windows.net/container-adfdemo/input/Dept_Data.csv\"),Csv = Csv.Document(AdfDoc, [Delimiter = \",\", Encoding = TextEncoding.Utf8, QuoteStyle = QuoteStyle.Csv]), PromotedHeaders = Table.PromoteHeaders(Csv, [PromoteAllScalars = true]) in  PromotedHeaders;\r\nshared UserQuery = let Source = #\"Empdata\",\r\n  #\"Grouped rows\" = Table.Group(Source, {\"DeptNo\"}, {{\"No_Of_Emp\", each Table.RowCount(_), Int64.Type}}),\r\n  #\"Merged queries\" = Table.NestedJoin(#\"Grouped rows\", {\"DeptNo\"}, DeptData, {\"DeptNo\"}, \"DeptData\", JoinKind.Inner),\r\n  #\"Expanded DeptData\" = Table.ExpandTableColumn(#\"Merged queries\", \"DeptData\", {\"DeptNo\", \"Dept_Name\"}, {\"DeptNo.1\", \"Dept_Name\"}),\r\n  #\"Removed columns\" = Table.RemoveColumns(#\"Expanded DeptData\", {\"DeptNo.1\"}) in #\"Removed columns\";\r\n",
+					"documentLocale": "en-us"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Pivot_Gender')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -187,7 +370,9 @@
 				"annotations": [],
 				"lastPublishTime": "2025-10-21T11:24:12Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/AggregateFlow')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Exists_Not_Exists')]",
@@ -233,7 +418,9 @@
 				"annotations": [],
 				"lastPublishTime": "2025-10-21T18:39:00Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/DeptNotHavingEmp')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/PowerQueryPipeLine')]",
@@ -293,7 +480,9 @@
 				"annotations": [],
 				"lastPublishTime": "2025-10-22T14:17:33Z"
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Emp_Dept')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Union_By_Position')]",

@@ -11,6 +11,9 @@
 		"adfdemo_ls_connectionString": {
 			"value": ""
 		},
+		"AzureKeyVault_ls_properties_typeProperties_baseUrl": {
+			"value": "https://firstKeyVault12.vault.azure.net/"
+		},
 		"SqlServer_ls_parameter_demo_properties_typeProperties_server": {
 			"value": "sqlServer.window.demo"
 		},
@@ -19,6 +22,9 @@
 		},
 		"SqlServer_ls_parameter_demo_properties_typeProperties_userName": {
 			"value": "swetha"
+		},
+		"ls_to_KeyVault_properties_typeProperties_connectionString_secretName": {
+			"value": "KeyForstorageadfdemo1"
 		}
 	}
 }
